@@ -6,7 +6,13 @@ import kotlin.reflect.full.starProjectedType
 
 class GenericDeserializer<T : Any>(private val supplier: () -> T) {
 
-    private var inObject = false
+    companion object {
+        const val START = "start"
+        const val END = "end"
+    }
+
+    private var processingObject = false
+    private var objectValid = true
     private var lastField = ""
     private var curObj: T = supplier.invoke()
     private val fieldMembers = curObj::class.members.map { it.name to it }.toMap()
@@ -18,36 +24,37 @@ class GenericDeserializer<T : Any>(private val supplier: () -> T) {
                 Int::class.starProjectedType -> setter.call(curObj, value.toInt())
                 Double::class.starProjectedType -> setter.call(curObj, value.toDouble())
                 Long::class.starProjectedType -> setter.call(curObj, value.toLong())
-                else -> throw RuntimeException()
+                else -> throw RuntimeException("Unsupported type $returnType")
             }
         }
     }
 
     public fun readData(reader: BufferedReader): List<T> {
         val values = mutableListOf<T>()
-
         reader.lines().forEach {
-
             if (it.trim().isEmpty()) {
                 // do nothing
-            } else if (it.contains("start")) {
-                inObject = true
-            } else if (it.contains("end")) {
-                values.add(curObj)
-                curObj = supplier.invoke()
-                inObject = false
-            } else {
-                val map = it.split(":").map { data -> data.trim() }
-                val (field, value) = map
-                if (field != "") {
-                    lastField = field
+            } else if (it.contains(START)) {
+                processingObject = true
+                objectValid = true
+            } else if (it.contains(END)) {
+                if (objectValid) {
+                    values.add(curObj)
+                } else {
+                    println("Discarded object $curObj as the fields were not valid.")
                 }
-                val callable = fieldMembers[lastField]
+                curObj = supplier.invoke()
+                processingObject = false
+            } else {
+                val (field, value) = it.split(":").map { data -> data.trim() }
+                if (field == "") {
+                    objectValid = false
+                }
+                val callable = fieldMembers[field]
                 if (callable is KMutableProperty<*>) {
                     callable.applyField(value)
                 }
             }
-
         }
         return values
     }

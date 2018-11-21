@@ -14,10 +14,11 @@ fun String.withReader(closure: (BufferedReader) -> Unit) = StringReader(this).us
 class TestGenericDeserializer
     : Spek({
 
-    group("contractor") {
-        val contractorName = "con24"
-        val fullName = "Conny Contractor"
-        val email = "conny.contractor@example.com"
+    val contractorName = "con24"
+    val fullName = "Conny Contractor"
+    val email = "conny.contractor@example.com"
+
+    group("valid objects") {
         val testData = """start
                               contractorName : $contractorName
                               fullName       : $fullName
@@ -37,5 +38,20 @@ class TestGenericDeserializer
         }
     }
 
+    group("invalid objects") {
+        val testData = """start
+                              contractorName : $contractorName
+                              fullName       : $fullName
+                                        : $email
+                            end"""
 
+        test("should return no objects as invalid objects get discarded") {
+            val subject = GenericDeserializer(::Contractor)
+
+            testData.withReader {
+                val data = subject.readData(it)
+                expect(data).has.size.equal(0)
+            }
+        }
+    }
 })
