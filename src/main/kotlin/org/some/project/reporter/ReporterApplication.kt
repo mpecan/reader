@@ -10,10 +10,11 @@ import org.some.project.reporter.readers.FileDeserializer
 
 class Runner: CliktCommand() {
     val path: String by option(help = "The relative or absolute path to the folder where the data is").default(".")
-    val operation: Int by option().int().prompt("Select mode of operation \n" +
+    val text = "Select mode of operation \n" +
             " 1. All workflows with instances\n" +
             " 2. Workflows with running instances\n" +
-            " 3. Contractors assigned to running instances\n")
+            " 3. Contractors assigned to running instances\n"
+    val operation: Int by option(help=text).int().prompt(text)
     override fun run() {
         val store = DataStore()
         val loader = FileDeserializer(store)
