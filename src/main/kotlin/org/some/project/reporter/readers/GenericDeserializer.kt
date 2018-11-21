@@ -41,10 +41,14 @@ class GenericDeserializer<T : Any>(private val supplier: () -> T) {
         val (field, value) = it.split(":").map { data -> data.trim() }
         if (field == "") {
             objectValid = false
+            return
         }
+        
         val callable = fieldMembers[field]
         if (callable is KMutableProperty<*>) {
             callable.applyField(value)
+        } else {
+            objectValid = false
         }
     }
 

@@ -39,16 +39,31 @@ class TestGenericDeserializer
     }
 
     group("invalid objects") {
-        val testData = """start
-                              contractorName : $contractorName
-                              fullName       : $fullName
+        val missingField =  """start
+                                  contractorName : $contractorName
+                                  fullName       : $fullName
                                         : $email
-                            end"""
+                                end"""
 
-        test("should return no objects as invalid objects get discarded") {
+        test("should discard objects with missing fields") {
             val subject = GenericDeserializer(::Contractor)
 
-            testData.withReader {
+            missingField.withReader {
+                val data = subject.readData(it)
+                expect(data).has.size.equal(0)
+            }
+        }
+
+
+        val typoInFieldName =   """start
+                                        contractorName : $contractorName
+                                        fullName       : $fullName
+                                        cookies         : $email
+                                    end"""
+        test("should discard objects with invalid fields") {
+            val subject = GenericDeserializer(::Contractor)
+
+            missingField.withReader {
                 val data = subject.readData(it)
                 expect(data).has.size.equal(0)
             }
