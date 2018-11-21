@@ -18,4 +18,9 @@ class Workflow {
         return id
     }
 
+    override fun toString(): String {
+        return "Workflow(id=$id, name='$name', author='$author', version=$version)"
+    }
+
+
 }

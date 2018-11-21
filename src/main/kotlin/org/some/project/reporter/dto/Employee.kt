@@ -17,4 +17,9 @@ class Employee {
         return employeeId
     }
 
+    override fun toString(): String {
+        return "Employee(employeeId=$employeeId, fullName='$fullName', email='$email')"
+    }
+
+
 }

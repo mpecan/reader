@@ -18,4 +18,9 @@ class Contractor {
         return contractorName.hashCode()
     }
 
+    override fun toString(): String {
+        return "Contractor(contractorName='$contractorName', fullName='$fullName', email='$email')"
+    }
+
+
 }

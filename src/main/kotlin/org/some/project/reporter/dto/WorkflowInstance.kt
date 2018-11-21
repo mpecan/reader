@@ -19,4 +19,9 @@ class WorkflowInstance {
         return id.hashCode()
     }
 
+    override fun toString(): String {
+        return "WorkflowInstance(id=$id, workflowId=$workflowId, assignee='$assignee', step='$step', status='$status')"
+    }
+
+
 }
