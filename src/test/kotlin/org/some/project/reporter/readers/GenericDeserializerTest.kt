@@ -11,7 +11,7 @@ fun String.withReader(closure: (BufferedReader) -> Unit) = StringReader(this).us
     BufferedReader(stringReader).use { closure(it) }
 }
 
-class TestGenericDeserializer
+class GenericDeserializerTest
     : Spek({
 
     val contractorName = "con24"
@@ -39,7 +39,7 @@ class TestGenericDeserializer
     }
 
     group("invalid objects") {
-        val missingField =  """start
+        val missingField = """start
                                   contractorName : $contractorName
                                   fullName       : $fullName
                                         : $email
@@ -55,7 +55,7 @@ class TestGenericDeserializer
         }
 
 
-        val typoInFieldName =   """start
+        val typoInFieldName = """start
                                         contractorName : $contractorName
                                         fullName       : $fullName
                                         cookies         : $email
