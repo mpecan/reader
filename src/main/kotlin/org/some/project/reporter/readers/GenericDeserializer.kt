@@ -13,9 +13,51 @@ class GenericDeserializer<T : Any>(private val supplier: () -> T) {
 
     private var processingObject = false
     private var objectValid = true
-    private var lastField = ""
     private var curObj: T = supplier.invoke()
     private val fieldMembers = curObj::class.members.map { it.name to it }.toMap()
+    private val values = mutableListOf<T>()
+
+    public fun readData(reader: BufferedReader): List<T> {
+        reader.lines().filter { !it.trim().isEmpty() }.forEach {
+            when {
+                !objectValid && it.contains(END) -> {
+                    commitOrDiscard()
+                }
+                it.contains(START) -> {
+                    processingObject = true
+                }
+                it.contains(END) -> {
+                    commitOrDiscard()
+                }
+                else -> {
+                    processLine(it)
+                }
+            }
+        }
+        return values
+    }
+
+    private fun processLine(it: String) {
+        val (field, value) = it.split(":").map { data -> data.trim() }
+        if (field == "") {
+            objectValid = false
+        }
+        val callable = fieldMembers[field]
+        if (callable is KMutableProperty<*>) {
+            callable.applyField(value)
+        }
+    }
+
+    private fun commitOrDiscard() {
+        if (objectValid) {
+            values.add(curObj)
+        } else {
+            println("Discarded object $curObj as the fields were not valid.")
+        }
+        curObj = supplier.invoke()
+        processingObject = false
+        objectValid = true
+    }
 
     private fun KMutableProperty<*>.applyField(value: String) {
         this.let { it }.let {
@@ -27,36 +69,6 @@ class GenericDeserializer<T : Any>(private val supplier: () -> T) {
                 else -> throw RuntimeException("Unsupported type $returnType")
             }
         }
-    }
-
-    public fun readData(reader: BufferedReader): List<T> {
-        val values = mutableListOf<T>()
-        reader.lines().forEach {
-            if (it.trim().isEmpty()) {
-                // do nothing
-            } else if (it.contains(START)) {
-                processingObject = true
-                objectValid = true
-            } else if (it.contains(END)) {
-                if (objectValid) {
-                    values.add(curObj)
-                } else {
-                    println("Discarded object $curObj as the fields were not valid.")
-                }
-                curObj = supplier.invoke()
-                processingObject = false
-            } else {
-                val (field, value) = it.split(":").map { data -> data.trim() }
-                if (field == "") {
-                    objectValid = false
-                }
-                val callable = fieldMembers[field]
-                if (callable is KMutableProperty<*>) {
-                    callable.applyField(value)
-                }
-            }
-        }
-        return values
     }
 
 }
