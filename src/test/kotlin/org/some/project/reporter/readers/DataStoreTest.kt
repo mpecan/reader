@@ -55,7 +55,7 @@ class DataStoreTest : Spek({
             subject.ingest(workflowInstanceList)
             expect(subject.workflowInstances).to.have.size(2)
         }
-        val contractorList = listOf(Contractor().apply { email = "abc" }, Contractor().apply { email = "cba" }, Contractor().apply { contractorName = "cba" })
+        val contractorList = listOf(Contractor().apply { email = "abc" }, Contractor().apply { email = "cba" }, Contractor().apply { email = "cba" })
         test("contractors") {
             val subject = DataStore()
             subject.ingest(contractorList)
